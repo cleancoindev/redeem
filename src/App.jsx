@@ -19,7 +19,6 @@ class App extends Component {
     account: null,
     error: null,
     network: null,
-    deadline: null,
     currentTx: null,
     mkrBalanceRedeemer: new web3.BigNumber(0),
     mkrBalance: new web3.BigNumber(0),
@@ -52,7 +51,7 @@ class App extends Component {
   redeemer = null;
 
   componentWillMount() {
-    window.ethereum.enable();
+    // window.ethereum.enable();
     setTimeout(() => {
       initWeb3(web3);
       web3.version.getNetwork((error, network) => {
@@ -83,6 +82,7 @@ class App extends Component {
           });
           return;
         }
+        this.setState({network})
         const old_mkr = web3.eth.contract(dstoken_abi).at(this.old_mkr_address);
         const mkr = web3.eth.contract(dstoken_abi).at(this.mkr_address);
         const redeemer = web3.eth.contract(redeemer_abi).at(this.redeemer_address);
@@ -100,7 +100,6 @@ class App extends Component {
                 network,
                 account: x[0]
               });
-              this.getDeadline();
               this.checkAll();
               setInterval(this.checkAll, 5000);
             } else {
@@ -112,12 +111,6 @@ class App extends Component {
         });
       });
     }, 500);
-  }
-
-  getDeadline = () => {
-    this.redeemer.undo_deadline((e, deadline) => {
-      this.setState({ deadline });
-    })
   }
 
   checkTransaction = (tx) => {
@@ -244,7 +237,7 @@ class App extends Component {
               </h3>
             </div>
           </div>
-          {this.state.network &&
+          {this.state.network && this.state.account &&
             <div>
               <div className="row">
                 <div className="col-md-12">
@@ -302,9 +295,10 @@ class App extends Component {
                 </div>
               </div>
               <Transaction currentTx={this.state.currentTx} url={this.url} />
-              <Stats supply={1000000} available={web3.fromWei(this.state.mkrBalanceRedeemer).toNumber()} />
             </div>
           }
+          {this.state.network && 
+          <Stats supply={1000000} available={web3.fromWei(this.state.mkrBalanceRedeemer).toNumber()} />}
           {this.state.error &&
             <div className="alert alert-warning" role="alert">
               <h4 className="alert-heading">Attention needed</h4>
